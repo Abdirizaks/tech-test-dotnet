@@ -1,10 +1,11 @@
 ﻿using ClearBank.DeveloperTest.Data;
 using ClearBank.DeveloperTest.Types;
 using System.Configuration;
+using ClearBank.DeveloperTest.Validator;
 
 namespace ClearBank.DeveloperTest.Services
 {
-    public class PaymentService : IPaymentService
+    public class PaymentService(IAccountDataStoreService accountDataStoreService, IPaymentValidator paymentValidator) : IPaymentService
     {
         public MakePaymentResult MakePayment(MakePaymentRequest request)
         {
