@@ -1,9 +1,8 @@
-﻿using ClearBank.DeveloperTest.Config;
-using ClearBank.DeveloperTest.Data;
+﻿using ClearBank.DeveloperTest.Data;
+using ClearBank.DeveloperTest.Factory;
 using ClearBank.DeveloperTest.Services;
 using ClearBank.DeveloperTest.Types;
 using FluentAssertions;
-using Microsoft.Extensions.Options;
 using NSubstitute;
 using Xunit;
 
@@ -11,68 +10,47 @@ namespace ClearBank.DeveloperTest.Tests.Services;
 
 public class AccountDataStoreServiceTests
 {
-    [Fact]
-    public void GetMainAccount_When_AccountIdExists_ReturnAccount()
+    private readonly IDataStoreFactory _dataStoreFactory;
+    private readonly IDataStore _dataStore;
+    private readonly AccountDataStoreService _sut;
+
+    public AccountDataStoreServiceTests()
     {
-        // Arrange
-        var dataStoreConfig = Options.Create(new DataStoreConfig(){Type="Main"});
-        var dataStore = new AccountDataStore();
-
-        var sut = new AccountDataStoreService(dataStoreConfig, dataStore);
+        _dataStoreFactory = Substitute.For<IDataStoreFactory>();
+        _dataStore = Substitute.For<IDataStore>();
         
-        // Act
-        var result = sut.GetAccount("12345");
+        _dataStoreFactory.Create().Returns(_dataStore);
 
-        // Assert
-        result.Should().NotBeNull();
+        _sut = new AccountDataStoreService(_dataStoreFactory);
     }
-    
+
     [Fact]
-    public void GetBackUpAccount_When_AccountIdExists_ReturnAccount()
+    public void GetAccount_ShouldReturnAccountFromDataStore()
     {
         // Arrange
-        var dataStoreConfig = Options.Create(new DataStoreConfig(){Type="Backup"});
-        var dataStore = new BackupAccountDataStore();
+        var expectedAccount = new Account { AccountNumber = "12345", Balance = 100 };
+        _dataStore.GetAccount("12345").Returns(expectedAccount);
 
-        var sut = new AccountDataStoreService(dataStoreConfig, dataStore);
-        
         // Act
-        var result = sut.GetAccount("12345");
+        var result = _sut.GetAccount("12345");
 
         // Assert
-        result.Should().NotBeNull();
-        
+        result.Should().Be(expectedAccount);
+        _dataStore.Received(1).GetAccount("12345");
+        _dataStoreFactory.Received(1).Create();
     }
-    
+
     [Fact]
-    public void UpdateMainAccount_When_AccountIdExists_ReturnAccount()
+    public void UpdateAccount_ShouldCallUpdateOnDataStore()
     {
         // Arrange
-        var dataStoreConfig = Options.Create(new DataStoreConfig(){Type="Main"});
-        var dataStore = Substitute.For<IDataStore>();
+        var account = new Account { AccountNumber = "67890", Balance = 500 };
 
-        var sut = new AccountDataStoreService(dataStoreConfig, dataStore);
-        
         // Act
-        sut.UpdateAccount(Arg.Any<Account>());
+        _sut.UpdateAccount(account);
 
         // Assert
-        dataStore.Received(1).UpdateAccount(Arg.Any<Account>());
-    }
-    
-    [Fact]
-    public void UpdateBackupAccount_When_AccountIdExists_ReturnAccount()
-    {
-        // Arrange
-        var dataStoreConfig = Options.Create(new DataStoreConfig(){Type="Backup"});
-        var dataStore = Substitute.For<IDataStore>();
-
-        var sut = new AccountDataStoreService(dataStoreConfig, dataStore);
-        
-        // Act
-        sut.UpdateAccount(Arg.Any<Account>());
-
-        // Assert
-        dataStore.Received(1).UpdateAccount(Arg.Any<Account>());
+        _dataStore.Received(1).UpdateAccount(account);
+        _dataStoreFactory.Received(1).Create();
     }
 }

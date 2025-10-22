@@ -7,13 +7,8 @@ namespace ClearBank.DeveloperTest.Tests.Validator;
 
 public class PaymentValidatorTests
 {
-    private readonly PaymentValidator _sut;
+    private readonly PaymentValidator _sut = new();
 
-    public PaymentValidatorTests()
-    {
-        _sut = new PaymentValidator();
-    }
-    
     [Fact]
     public void IsValid_Bacs_ShouldReturnTrue_WhenAccountAllowsBacs()
     {

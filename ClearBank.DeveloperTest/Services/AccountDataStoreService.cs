@@ -1,19 +1,19 @@
-﻿using ClearBank.DeveloperTest.Config;
-using ClearBank.DeveloperTest.Data;
+﻿using ClearBank.DeveloperTest.Factory;
 using ClearBank.DeveloperTest.Types;
-using Microsoft.Extensions.Options;
 
 namespace ClearBank.DeveloperTest.Services;
 
-public class AccountDataStoreService(IOptions<DataStoreConfig> dataStoreConfig, IDataStore dataStore) : IAccountDataStoreService
+public class AccountDataStoreService(IDataStoreFactory dataStore) : IAccountDataStoreService
 {
     public Account GetAccount(string debtorAccountNumber)
     {
-        throw new System.NotImplementedException();
+        var datastore = dataStore.Create();
+        return datastore.GetAccount(debtorAccountNumber);
     }
 
     public void UpdateAccount(Account account)
     {
-        throw new System.NotImplementedException();
+        var datastore = dataStore.Create();
+        datastore.UpdateAccount(account);
     }
 }
